@@ -1,64 +1,34 @@
-import initiate.config as config
-import matplotlib.pyplot as plt
-from initiate.load_data import load_data
+import json
 import numpy as np
-from eulerian import get_ordinary_section_eulerian
+import matplotlib.pyplot as plt
+import initiate.config as config
+from analysis.svd_analysis import svd_analysis
+from analysis.hankel import get_hankel_matrix
+from analysis.dmd_analysis import hankel_dmd_analysis
 
 
-trajectory_dict = load_data(config.data_folder)
-for section_id in [2, 3, 4, 5]:
-    get_ordinary_section_eulerian(trajectory_dict, section_id)
-    # exit()
-exit()
+matrix_file_name = "figures/matrix.json"
 
-select_intersection = 7
-overall_x_list = []
-overall_y_list = []
-section_x_list = [[] for temp in range(7)]
-section_y_list = [[] for temp in range(7)]
-overall_time_list = []
-overall_section_list = []
-overall_speed_list = []
 
-for veh_id in trajectory_dict.keys():
-    trajectory = trajectory_dict[veh_id]
-    x_list = trajectory.local_x_list
-    y_list = trajectory.local_y_list
-    section_list = trajectory.section_list
-    for idx in range(len(section_list)):
-        section_x_list[section_list[idx]].append(x_list[idx])
-        section_y_list[section_list[idx]].append(y_list[idx])
-        if not (section_list[idx] in overall_section_list):
-            overall_section_list.append(section_list[idx])
-    overall_x_list += x_list
-    overall_y_list += y_list
-    overall_time_list += trajectory.time_list
-    overall_speed_list += trajectory.velocity_list
+def main():
+    with open(matrix_file_name, "r") as temp_file:
+        matrix_json = json.load(temp_file)
 
-plt.figure()
-plt.hist(overall_speed_list, bins=100)
-plt.savefig("figures/speed_hist.png", dpi=300)
-plt.title("Histogram of velocity (m/s)")
-plt.close()
+    # print(xticks)
+    density_matrix = np.mat(matrix_json["density"])
+    velocity_matrix = np.mat(matrix_json["velocity"])
 
-plt.figure()
-plt.hist(overall_time_list, bins=100)
-# print(np.min(overall_time_list), np.max(overall_time_list))
-plt.title("Histogram of time (s)")
-plt.savefig("figures/time_hist.png", dpi=300)
-plt.close()
+    # svd analysis for the two matrices
+    svd_analysis(density_matrix, 50, "density", cmap=config.density_color)
+    svd_analysis(velocity_matrix, 50, "velocity", cmap=config.congestion_color)
 
-# print(overall_section_list)
+    # dmd analysis for density matrix and velocity matrix
+    delay_embedding = 30
+    selected_ranks = 121
 
-color_list = ["purple", "b", "r", "g", "c", "gold", "m"]
-plt.figure(figsize=[5, 10])
-for sec_id in range(len(section_x_list)):
-    plt.plot(section_x_list[sec_id], section_y_list[sec_id], ".", color=color_list[sec_id], alpha=0.05)
-# plt.plot(overall_x_list, overall_y_list, "k.", alpha=0.005)
-plt.xlabel("x (m)")
-plt.ylabel("y (m)")
-plt.xlim([-20, 20])
-plt.legend()
-plt.tight_layout()
-plt.savefig("figures/section.png", dpi=300)
-plt.close()
+    hankel_dmd_analysis(velocity_matrix, selected_ranks, delay_embedding, "velocity", cmap=config.congestion_color)
+    hankel_dmd_analysis(density_matrix, selected_ranks, delay_embedding, "density", cmap=config.density_color)
+
+
+if __name__ == '__main__':
+    main()

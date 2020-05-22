@@ -2,7 +2,7 @@ import numpy as np
 import initiate.config as config
 
 
-def get_ordinary_section_eulerian(trajectory_dict, section_id):
+def get_eulerian_density_velocity(trajectory_dict, debug=False):
     # fetch the trajectory data in this section
     trajs_dict = {"north": {"times": [], "xs": [], "ys": [], "lanes": []},
                   "south": {"times": [], "xs": [], "ys": [], "lanes": []}}
@@ -25,12 +25,12 @@ def get_ordinary_section_eulerian(trajectory_dict, section_id):
         local_lanes = []
         local_times = []
         for idx in range(len(x_list)):
-            if section_list[idx] == section_id:
-                local_xs.append(x_list[idx])
-                local_ys.append(y_list[idx])
-                local_dirs.append(direction_list[idx])
-                local_lanes.append(lane_list[idx])
-                local_times.append(time_list[idx])
+            # if section_list[idx] == section_id:
+            local_xs.append(x_list[idx])
+            local_ys.append(y_list[idx])
+            local_dirs.append(direction_list[idx])
+            local_lanes.append(lane_list[idx])
+            local_times.append(time_list[idx])
         if len(local_dirs) == 0:
             continue
 
@@ -131,90 +131,103 @@ def get_ordinary_section_eulerian(trajectory_dict, section_id):
     south_density_matrix = density_matrix
     south_velocity_matrix = velocity_matrix
 
-    import matplotlib.pyplot as plt
-    plt.subplot(411)
-    plt.imshow(north_velocity_matrix, cmap=config.congestion_color, aspect="auto")
-    plt.colorbar()
-    plt.subplot(412)
-    plt.imshow(north_density_matrix, cmap=config.density_color, aspect="auto")
-    plt.colorbar()
-    plt.subplot(413)
-    plt.imshow(south_velocity_matrix, cmap=config.congestion_color, aspect="auto")
-    plt.colorbar()
-    plt.subplot(414)
-    plt.imshow(south_density_matrix, cmap=config.density_color, aspect="auto")
-    plt.colorbar()
-    plt.show()
-    plt.close()
+    if debug:
+        import matplotlib.pyplot as plt
+        plt.subplot(411)
+        plt.imshow(north_velocity_matrix, cmap=config.congestion_color, aspect="auto", vmin=0, vmax=15)
+        plt.colorbar()
+        plt.subplot(412)
+        plt.imshow(north_density_matrix, cmap=config.density_color, aspect="auto")
+        plt.colorbar()
+        plt.subplot(413)
+        plt.imshow(south_velocity_matrix, cmap=config.congestion_color, aspect="auto", vmin=0, vmax=15)
+        plt.colorbar()
+        plt.subplot(414)
+        plt.imshow(south_density_matrix, cmap=config.density_color, aspect="auto")
+        plt.colorbar()
+        plt.show()
+        plt.close()
 
-    # plt.figure()
-    # overall_xs = []
-    # overall_ys = []
-    # lane1_xs = []
-    # lane1_ys = []
-    # lane2_xs = []
-    # lane2_ys = []
-    # lane3_xs = []
-    # lane3_ys = []
-    # for idx in range(len(trajs_dict["north"]["times"])):
-    #     overall_xs += trajs_dict["north"]["xs"][idx]
-    #     overall_ys += trajs_dict["north"]["ys"][idx]
-    #     lane_list = trajs_dict["north"]["lanes"][idx]
-    #     x_list = trajs_dict["north"]["xs"][idx]
-    #     y_list = trajs_dict["north"]["ys"][idx]
-    #     for jdx in range(len(x_list)):
-    #         if lane_list[jdx] == 11:
-    #             lane1_xs.append(x_list[jdx])
-    #             lane1_ys.append(y_list[jdx])
-    #         if lane_list[jdx] == 1:
-    #             lane2_xs.append(x_list[jdx])
-    #             lane2_ys.append(y_list[jdx])
-    #         if lane_list[jdx] == 2:
-    #             lane3_xs.append(x_list[jdx])
-    #             lane3_ys.append(y_list[jdx])
-    #
-    # plt.plot(lane1_xs[::10], lane1_ys[::10], "r.", alpha=0.5, label="north lane 11")
-    # plt.plot(lane2_xs[::10], lane2_ys[::10], "g.", alpha=0.5, label="north lane 1")
-    # plt.plot(lane3_xs[::10], lane3_ys[::10], "b.", alpha=0.5, label="north lane 2")
-    #
-    # lane1_xs = []
-    # lane1_ys = []
-    # lane2_xs = []
-    # lane2_ys = []
-    # lane3_xs = []
-    # lane3_ys = []
-    # for idx in range(len(trajs_dict["south"]["times"])):
-    #     overall_xs += trajs_dict["south"]["xs"][idx]
-    #     overall_ys += trajs_dict["south"]["ys"][idx]
-    #     lane_list = trajs_dict["south"]["lanes"][idx]
-    #     x_list = trajs_dict["south"]["xs"][idx]
-    #     y_list = trajs_dict["south"]["ys"][idx]
-    #     for jdx in range(len(x_list)):
-    #         if lane_list[jdx] == 11:
-    #             lane1_xs.append(x_list[jdx])
-    #             lane1_ys.append(y_list[jdx])
-    #         if lane_list[jdx] == 1:
-    #             lane2_xs.append(x_list[jdx])
-    #             lane2_ys.append(y_list[jdx])
-    #         if lane_list[jdx] == 2:
-    #             lane3_xs.append(x_list[jdx])
-    #             lane3_ys.append(y_list[jdx])
-    #
-    # plt.plot(lane1_xs[::10], lane1_ys[::10], "k.", alpha=0.5, label="south lane 11")
-    # plt.plot(lane2_xs[::10], lane2_ys[::10], "m.", alpha=0.5, label="south lane 1")
-    # plt.plot(lane3_xs[::10], lane3_ys[::10], "c.", alpha=0.5, label="south lane 2")
-    # # plt.show()
-    # plt.legend()
-    # plt.xlabel("Local x (m)")
-    # plt.ylabel("Local y (m)")
-    # plt.tight_layout()
-    # plt.savefig("figures/section_" + str(section_id) + ".png", dpi=300)
-    # plt.close()
-    # # exit()
+        # plt.figure()
+        # overall_xs = []
+        # overall_ys = []
+        # lane1_xs = []
+        # lane1_ys = []
+        # lane2_xs = []
+        # lane2_ys = []
+        # lane3_xs = []
+        # lane3_ys = []
+        # for idx in range(len(trajs_dict["north"]["times"])):
+        #     overall_xs += trajs_dict["north"]["xs"][idx]
+        #     overall_ys += trajs_dict["north"]["ys"][idx]
+        #     lane_list = trajs_dict["north"]["lanes"][idx]
+        #     x_list = trajs_dict["north"]["xs"][idx]
+        #     y_list = trajs_dict["north"]["ys"][idx]
+        #     for jdx in range(len(x_list)):
+        #         if lane_list[jdx] == 11:
+        #             lane1_xs.append(x_list[jdx])
+        #             lane1_ys.append(y_list[jdx])
+        #         if lane_list[jdx] == 1:
+        #             lane2_xs.append(x_list[jdx])
+        #             lane2_ys.append(y_list[jdx])
+        #         if lane_list[jdx] == 2:
+        #             lane3_xs.append(x_list[jdx])
+        #             lane3_ys.append(y_list[jdx])
+        #
+        # plt.plot(lane1_xs[::10], lane1_ys[::10], "r.", alpha=0.5, label="north lane 11")
+        # plt.plot(lane2_xs[::10], lane2_ys[::10], "g.", alpha=0.5, label="north lane 1")
+        # plt.plot(lane3_xs[::10], lane3_ys[::10], "b.", alpha=0.5, label="north lane 2")
+        #
+        # lane1_xs = []
+        # lane1_ys = []
+        # lane2_xs = []
+        # lane2_ys = []
+        # lane3_xs = []
+        # lane3_ys = []
+        # for idx in range(len(trajs_dict["south"]["times"])):
+        #     overall_xs += trajs_dict["south"]["xs"][idx]
+        #     overall_ys += trajs_dict["south"]["ys"][idx]
+        #     lane_list = trajs_dict["south"]["lanes"][idx]
+        #     x_list = trajs_dict["south"]["xs"][idx]
+        #     y_list = trajs_dict["south"]["ys"][idx]
+        #     for jdx in range(len(x_list)):
+        #         if lane_list[jdx] == 11:
+        #             lane1_xs.append(x_list[jdx])
+        #             lane1_ys.append(y_list[jdx])
+        #         if lane_list[jdx] == 1:
+        #             lane2_xs.append(x_list[jdx])
+        #             lane2_ys.append(y_list[jdx])
+        #         if lane_list[jdx] == 2:
+        #             lane3_xs.append(x_list[jdx])
+        #             lane3_ys.append(y_list[jdx])
+        #
+        # plt.plot(lane1_xs[::10], lane1_ys[::10], "k.", alpha=0.5, label="south lane 11")
+        # plt.plot(lane2_xs[::10], lane2_ys[::10], "m.", alpha=0.5, label="south lane 1")
+        # plt.plot(lane3_xs[::10], lane3_ys[::10], "c.", alpha=0.5, label="south lane 2")
+        # # plt.show()
+        # plt.legend()
+        # plt.xlabel("Local x (m)")
+        # plt.ylabel("Local y (m)")
+        # plt.tight_layout()
+        # plt.savefig("figures/section_" + str(section_id) + ".png", dpi=300)
+        # plt.close()
+        # exit()
+    combined_density_matrix = np.concatenate((north_density_matrix, south_density_matrix))
+    combined_velocity_matrix = np.concatenate((north_velocity_matrix, south_velocity_matrix))
+    (m, n) = np.shape(combined_velocity_matrix)
+    for im in range(m):
+        for iin in range(n):
+            combined_velocity_matrix[im, iin] = min(15, combined_velocity_matrix[im, iin])
+    return combined_density_matrix, combined_velocity_matrix
 
-    return north_density_matrix, north_velocity_matrix, south_density_matrix, south_velocity_matrix
 
+if __name__ == '__main__':
+    import json
+    from initiate.load_data import load_data
 
-def get_intersection_eulerian(trajectory_dict, section_id):
-    pass
+    trajectory_dict = load_data(config.data_folder)
+    density_matrix, velocity_matrix = get_eulerian_density_velocity(trajectory_dict, debug=False)
+    json_info = {"density": density_matrix.tolist(), "velocity": velocity_matrix.tolist()}
+    with open("../figures/matrix.json", "w") as temp_file:
+        json.dump(json_info, temp_file)
 
